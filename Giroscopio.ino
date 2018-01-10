@@ -83,7 +83,6 @@ void getGyroValues2()// leitura mais rapida mas a um erro que precisa ser corrig
 
 int setupL3G4200D()
 {
-  //From  Jim Lindblom of Sparkfun's code
 
   // abilita modo de operação para mormal ( leitura)  x, y, z 
   //bits 4 a 0 abilita modo normal (leitura de x y z)
