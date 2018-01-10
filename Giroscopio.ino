@@ -1,7 +1,7 @@
 // Programa : Teste Giroscopio L3G4200D
 // autor: elton fernandes dos santos eltonfernando90@gmail.com
 // data: 09/01/2018
-// os filtros estao abilidatado com fc= 0.02HZ para o FPA e 32Hz 12.5Hz para FPB
+// os filtros estao abilitado com fc= 0.02HZ para o FPA e 32Hz 12.5Hz para FPB
 #include <Wire.h>
 
 #define CTRL_REG1 0x20
@@ -43,7 +43,7 @@ void loop()
   float dt = ((float)tempo / 1000000); // converte para float
   x = x_1 + x *0.00875* dt; // integrador  x é velodidade vira posiçao
   y = y_1 + y *0.00875* dt;
-  z = z_1 + z * dt*0.00875; // 0.00875 sencibilidade para 250pds (ou pratico 100/11428)
+  z = z_1 + z * dt*0.00875; // 0.00875 sensibilidade para 250pds (ou pratico 100/11428)
   x_1 = x;
   y_1 = y;
   z_1 = z;
