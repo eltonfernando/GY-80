@@ -1,7 +1,7 @@
 // Programa : Teste Giroscopio L3G4200D
 // autor: elton fernandes dos santos eltonfernando90@gmail.com
 // data: 09/01/2018
-// os filtros estao abilitado com fc= 0.02HZ para o FPA e 32Hz 12.5Hz para FPB
+// os filtros estao abilidatado com fc= 0.02HZ para o FPA e 32Hz 12.5Hz para FPB
 #include <Wire.h>
 
 #define CTRL_REG1 0x20
@@ -43,7 +43,9 @@ void loop()
   float dt = ((float)tempo / 1000000); // converte para float
   x = x_1 + x *0.00875* dt; // integrador  x é velodidade vira posiçao
   y = y_1 + y *0.00875* dt;
-  z = z_1 + z * dt*0.00875; // 0.00875 sensibilidade para 250pds (ou pratico 100/11428)
+  z = z_1 + z * dt*0.00875; // 0.00875 sensibilidade para 250pds 
+// para corrigir ruido de integração um filtro PFA deve ser implementado aqui (filtrar x y z)
+  
   x_1 = x;
   y_1 = y;
   z_1 = z;
@@ -83,33 +85,39 @@ void getGyroValues2()// leitura mais rapida mas a um erro que precisa ser corrig
 
 int setupL3G4200D()
 {
-  //From  Jim Lindblom of Sparkfun's code
 
   // abilita modo de operação para mormal ( leitura)  x, y, z 
-  //bits 4 a 0 abilita modo normal (leitura de x y z)
-  // bits  4 MSB frenquencia de FPB (FPB1 = 32HZ e FPB2 = 12.5) 
+  //bits 8-7 DR1-DR0 taxa de amostragem
+  // bits 6-5 BW1-BW0 largura de banda => frenquencia de FPB (FPB1 = 32HZ e FPB2 = 12.5) 
+  //bits 4 PD mode de operacao ( 1 normal modo para leitura)
+  // bits 4-2-1 abilitas as saída de dados dos eixos x y z 
   writeRegister(L3G4200D_Address, CTRL_REG1, 0b00001111);
 
   // filtro passa alta 
-  // bits 9 e 7 nao usado 00
-  // bits 6 e 5 modo e operação do filtro 00
-  // bits 3 a 0 frequencia de corte FPA 0101 (0.02Hz)
+  // bits 8-7 nao usado 00
+  // bits 6-5 HPM1-HPM0 modo e operação do filtro 00
+  // bits 4-3-2-1 HPCF3-HPCF2-HPCF1-HPCF0 frequencia de corte FPA 0101 (0.02Hz)
   writeRegister(L3G4200D_Address, CTRL_REG2, 0b00110101);
 
   // configura interrupcao
   writeRegister(L3G4200D_Address, CTRL_REG3, 0b00001000);
 
   // CTRL_REG4 controle de escala dps  definido com 250 dps
-  // bit 7 DBU = 1 (amostra ooletada em um t comum)
+  // bit 8 DBU = 1 (amostra ooletada em um t comum)
+  //bit 7 BLE se 1 troca MSB por LSB (default=0)
+  //bit 6-5 FS1-FS0 define escala 00=250dps 01=500dps 10=2000dps=11
+  // bit 4 não usado
+  //bit 3-2 ST1-ST0 auto teste default=00
+  //bit 1 sim define interface de comunicação spi 1= 3fios 0=4fios (default=0)
     writeRegister(L3G4200D_Address, CTRL_REG4, 0b10000000); 
  
   
-
- // bit  7 =0 desabilita FIFO (os dados vao direto para saida )
+// bit 8 BOOT 0= modo normal
+ // bit  7 FIFO_EN =0 desabilita FIFO (os dados vao direto para saida )
  // bit 6 nao usado
- // bit 5 Hpen em 1 abilita filtro FPA (filtro passa alta)
- // bit 4 INT1_Sel1 bit 3 INT1_Sel0 ( abilita interrupcao)
- // bit 2 Out_Sel1 bit 1  Out_Sel0 (abilita filtros)
+ // bit 5 Hpen em 1 seleciona filtro FPA (filtro passa alta)
+ // bit 4 INT1_Sel1 bit 3 INT1_Sel0 ( seleciona interrupcao)
+ // bit 2 Out_Sel1 bit 1  Out_Sel0 (abilita filtros) figura 19 no datasheet
   writeRegister(L3G4200D_Address, CTRL_REG5, 0b00010011);
 
 // REG referencia
